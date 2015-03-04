@@ -74,11 +74,11 @@ def is_global(id_node,global_variables):
 def find_globals(ast):
     set_parent(ast,None)
     global_variables = get_global_decl(ast)
-    glob = []
+
     for i in get_ids(ast):
         if is_global(i,global_variables):
-            glob.append(i)
-    return glob
+            global_variables.append(i)
+    return global_variables
 
 def find_file_globals(filename):
     parser = c_parser.CParser()
@@ -91,4 +91,8 @@ def find_file_globals(filename):
 if __name__ == "__main__":
     if(len(sys.argv)>=2):
         for g in find_file_globals(sys.argv[1]):
-            print(str(g.coord) + ":"+g.name)
+            if type(g).__name__ == "Decl":
+                t = "declaration"
+            else:
+                t = "usage"
+            print(str(g.coord) + ":"+t+":"+g.name)

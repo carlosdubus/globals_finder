@@ -5,5 +5,7 @@
 
 
 Result:
-	example.c:17:other
-	example.c:21:A
+	example.c:1:declaration:myArray
+	example.c:2:declaration:A
+	example.c:17:usage:other
+	example.c:21:usage:A
