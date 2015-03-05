@@ -1,5 +1,8 @@
 from __future__ import print_function
 import sys
+import glob
+import os
+import fnmatch
 
 # This is not required if you've installed pycparser into
 # your site-packages/ with setup.py
@@ -80,19 +83,50 @@ def find_globals(ast):
             global_variables.append(i)
     return global_variables
 
+def remove_directives(filecontent):
+    lines = filecontent.splitlines()
+    newlines = []
+    for line in lines:
+        if(len(line)>0 and line[0]=="#"):
+            line = ""
+
+        newlines.append(line)
+
+    return "\n".join(newlines)
+
+
 def find_file_globals(filename):
     parser = c_parser.CParser()
     with open(filename, 'r') as content_file:
         content = content_file.read()
+        content = remove_directives(content)
         ast = parser.parse(content, filename=filename)
         return find_globals(ast)
 
 
-if __name__ == "__main__":
-    if(len(sys.argv)>=2):
-        for g in find_file_globals(sys.argv[1]):
+def print_globals(filename):
+    try:
+        for g in find_file_globals(filename):
             if type(g).__name__ == "Decl":
                 t = "declaration"
             else:
                 t = "usage"
+
             print(str(g.coord) + ":"+t+":"+g.name)
+    except Exception as e:
+        print("[error] "+str(e))
+
+def find_files(dir,expr):
+    matches = []
+    for root, dirnames, filenames in os.walk(dir):
+      for filename in fnmatch.filter(filenames, expr):
+          matches.append(os.path.join(root, filename))
+    return matches
+
+if __name__ == "__main__":
+    if(len(sys.argv)>=2):
+        files = find_files(sys.argv[1],sys.argv[2])
+        for file in files:
+            print_globals(file)
+        
+        
